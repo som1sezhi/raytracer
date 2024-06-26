@@ -22,8 +22,15 @@ class App
 public:
 	App(const AppSpec &spec);
 	~App();
+
+	// Start the app's main loop.
 	void Run();
+
+	// Called after polling for events and before Dear ImGui begins a new frame.
+	// Intended for responding to keyboard/mouse events.
 	virtual void Update() {}
+
+	// Render the GUI.
 	virtual void RenderUI() {}
 
 private:

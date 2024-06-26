@@ -1,18 +1,22 @@
 #pragma once
 
 #include <memory>
+
 #include "core/Image.h"
 #include "Renderer.h"
 
-class CPURenderer : public Renderer
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
+
+class GPURenderer : public Renderer
 {
 public:
-	CPURenderer() = default;
+	GPURenderer() = default;
 
 	virtual void OnResize(uint32_t width, uint32_t height) override;
 	virtual void Render() override;
 	virtual Image* GetImage() override { return m_Image.get(); }
 private:
 	std::unique_ptr<Image> m_Image;
-	uint32_t* m_ImageData = nullptr;
+	cudaGraphicsResource_t m_ImageCudaResource = nullptr;
 };

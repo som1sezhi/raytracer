@@ -1,36 +1,62 @@
 #include "App.h"
-#include "App.h"
 
 // Based on Dear ImGui example application for GLFW + OpenGL 3
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 
-static void glfw_error_callback(int error, const char* description)
+static void glfwErrorCallback(int error, const char* description)
 {
-    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+    std::cerr << "GLFW Error " << error << ": " << description << "\n";
 }
 
-//void GLAPIENTRY glErrorCallback(
-//    GLenum source,
-//    GLenum type,
-//    GLuint id,
-//    GLenum severity,
-//    GLsizei length,
-//    const GLchar* message,
-//    const void* userParam)
-//{
-//    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-//        (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-//        type, severity, message);
-//}
+#define GL_CALLBACK_TYPE_CASE(type) \
+case GL_DEBUG_TYPE_ ## type:\
+    std::cerr << #type;\
+    break
+
+#define GL_CALLBACK_SEVERITY_CASE(severity) \
+case GL_DEBUG_SEVERITY_ ## severity:\
+    std::cerr << #severity;\
+    break
+
+static void GLAPIENTRY glErrorCallback(
+    GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const void* userParam
+)
+{
+    if (type == GL_DEBUG_TYPE_OTHER)
+        return;
+    std::cerr << "GL callback (";
+    switch (type)
+    {
+        GL_CALLBACK_TYPE_CASE(ERROR);
+        GL_CALLBACK_TYPE_CASE(DEPRECATED_BEHAVIOR);
+        GL_CALLBACK_TYPE_CASE(UNDEFINED_BEHAVIOR);
+        GL_CALLBACK_TYPE_CASE(PORTABILITY);
+        GL_CALLBACK_TYPE_CASE(PERFORMANCE);
+    }
+    std::cerr << ") (";
+    switch (severity)
+    {
+        GL_CALLBACK_SEVERITY_CASE(LOW);
+        GL_CALLBACK_SEVERITY_CASE(MEDIUM);
+        GL_CALLBACK_SEVERITY_CASE(HIGH);
+    }
+    std::cerr << "): " << message << "\n";
+}
 
 
 App::App(const AppSpec &spec)
 {
-    glfwSetErrorCallback(glfw_error_callback);
+    glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit())
     {
-        fprintf(stderr, "GLFW init failed\n");
+        std::cerr << "GLFW init failed\n";
         exit(1);
     }
 
@@ -49,10 +75,10 @@ App::App(const AppSpec &spec)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
-    // GL 3.0 + GLSL 130
+    // GL 4.6 + GLSL 130
     const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
@@ -61,27 +87,28 @@ App::App(const AppSpec &spec)
     m_Window = glfwCreateWindow(spec.Width, spec.Height, spec.Title.c_str(), nullptr, nullptr);
     if (m_Window == nullptr)
     {
-        fprintf(stderr, "GLFW window creation failed\n");
+        std::cerr << "GLFW window creation failed\n";
         exit(1);
     }
     glfwMakeContextCurrent(m_Window);
     glfwSwapInterval(1); // Enable vsync
 
-    // get version info
-    //const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-    //const GLubyte* version = glGetString(GL_VERSION); // version as a string
-    //printf("Renderer: %s\n", renderer);
-    //printf("OpenGL version supported %s\n", version);
-
+    // Load OpenGL
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        fprintf(stderr, "GLAD init failed\n");
+        std::cerr << "GLAD init failed\n";
         exit(1);
     }
 
+    // Print OpenGL version info
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    const GLubyte* version = glGetString(GL_VERSION);
+    std::cerr << "Renderer: " << renderer << "\n";
+    std::cerr << "OpenGL version supported " << version << "\n";
+
     // Enable debug output
-    //glEnable(GL_DEBUG_OUTPUT);
-    //glDebugMessageCallback(glErrorCallback, 0);
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(glErrorCallback, 0);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();

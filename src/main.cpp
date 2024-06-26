@@ -3,7 +3,7 @@
 int main(int, char**)
 {
     AppSpec spec;
-    spec.Title = "RayTracer";
+    spec.Title = "cool gpu-rendered gradient";
     spec.Width = 1280;
     spec.Height = 720;
 

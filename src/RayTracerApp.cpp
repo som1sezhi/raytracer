@@ -1,6 +1,7 @@
 #include "RayTracerApp.h"
 
 #include <iostream>
+#include "core/Timer.h"
 
 RayTracerApp::RayTracerApp(const AppSpec &spec)
 	: App(spec),
@@ -16,8 +17,11 @@ void RayTracerApp::RenderUI()
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    m_CPURenderer.OnResize(m_ViewportWidth, m_ViewportHeight);
-    m_CPURenderer.Render();
+    m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
+
+    Timer timer;
+    m_Renderer.Render();
+    float renderTimeMs = timer.GetElapsedSecs() * 1000.0f;
 
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
@@ -64,25 +68,27 @@ void RayTracerApp::RenderUI()
         ImGui::Text("Hello from another window!");
         if (ImGui::Button("Close Me"))
             show_another_window = false;
+        ImGui::Text("Render time: %.3f ms", renderTimeMs);
         ImGui::End();
     }
 
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("Viewport");
+    // ================ Viewport window ================
 
-        m_ViewportWidth = ImGui::GetContentRegionAvail().x;
-        m_ViewportHeight = ImGui::GetContentRegionAvail().y;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("Viewport");
+
+    m_ViewportWidth = ImGui::GetContentRegionAvail().x;
+    m_ViewportHeight = ImGui::GetContentRegionAvail().y;
         
-        Image* image = m_CPURenderer.GetImage();
-        if (image)
-        {
-            ImGui::Image(
-                (void*)(intptr_t)image->GetID(),
-                { (float)image->GetWidth(), (float)image->GetHeight() }
-            );
-        }
-        ImGui::End();
-        ImGui::PopStyleVar();
+    Image* image = m_Renderer.GetImage();
+    if (image)
+    {
+        ImGui::Image(
+            (void*)(intptr_t)image->GetID(),
+            { (float)m_ViewportWidth, (float)m_ViewportHeight },
+            {0, 1}, {1,0}
+        );
     }
+    ImGui::End();
+    ImGui::PopStyleVar();
 }

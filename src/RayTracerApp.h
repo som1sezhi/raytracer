@@ -3,6 +3,7 @@
 #include "core/App.h"
 #include "core/Image.h"
 #include "CPURenderer.h"
+#include "GPURenderer.h"
 
 class RayTracerApp : public App
 {
@@ -14,6 +15,6 @@ private:
 	// Our state
 	bool show_demo_window = true;
 	bool show_another_window = true;
-	CPURenderer m_CPURenderer;
+	GPURenderer m_Renderer;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 };

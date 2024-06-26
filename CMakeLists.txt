@@ -1,15 +1,16 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
 
-project(raytracer LANGUAGES CXX C)
+project(raytracer LANGUAGES CXX C CUDA)
 
-# dependencies
+# External dependencies  
 find_package(OpenGL REQUIRED)
 add_subdirectory(extern)
 
+# Core app library (stuff I could potentially reuse in future Dear ImGui projs)
 add_library(core STATIC
-    src/core/App.cpp
-    src/core/App.h
-    src/core/Image.cpp
+    "src/core/App.cpp"
+    "src/core/Image.cpp"
+    "src/core/Timer.cpp"
 )
 target_link_libraries(core PUBLIC
     ${OPENGL_gl_LIBRARY}
@@ -19,12 +20,20 @@ target_link_libraries(core PUBLIC
 )
 
 add_executable(raytracer
-    src/main.cpp
-    src/RayTracerApp.cpp
-    src/RayTracerApp.h
-    src/CPURenderer.cpp
-    src/CPURenderer.h
+    "src/Main.cpp"
+    "src/RayTracerApp.cpp"
+    "src/CPURenderer.cpp"
+    "src/GPURenderer.cpp"
+    "src/Kernels.cu"
+    "src/ErrorCheck.cpp"
 )
 target_link_libraries(raytracer PRIVATE
     core
+)
+target_include_directories(raytracer PRIVATE
+    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+)
+set_target_properties(raytracer PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_ARCHITECTURES "50"
 )
