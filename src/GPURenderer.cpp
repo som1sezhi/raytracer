@@ -23,7 +23,7 @@ void GPURenderer::OnResize(uint32_t width, uint32_t height)
 	// Create image if it doesn't exist yet
 	else
 	{
-		m_Image = std::make_unique<Image>(width, height);
+		m_Image = std::make_unique<Image>(width, height, Image::Format::RGBA32F);
 	}
 
 	CU_CHECK(cudaGraphicsGLRegisterImage(

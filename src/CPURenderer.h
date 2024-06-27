@@ -16,5 +16,5 @@ public:
 private:
 	glm::vec4 TraceRay(Scene& scene, Ray& ray);
 	std::unique_ptr<Image> m_Image;
-	uint32_t* m_ImageData = nullptr;
+	float* m_ImageData = nullptr;
 };

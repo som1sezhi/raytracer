@@ -22,13 +22,13 @@ void CPURenderer::OnResize(uint32_t width, uint32_t height)
 	// Create image if it doesn't exist yet
 	else
 	{
-		m_Image = std::make_unique<Image>(width, height);
+		m_Image = std::make_unique<Image>(width, height, Image::Format::RGBA32F);
 	}
 
 	// If the image was just created/resized, we need to allocate space
 	// for our image data
 	delete[] m_ImageData;
-	m_ImageData = new uint32_t[width * height];
+	m_ImageData = new float[width * height * 4];
 }
 
 void CPURenderer::Render(Scene& scene, Camera& camera)
@@ -53,14 +53,10 @@ void CPURenderer::Render(Scene& scene, Camera& camera)
 
 			glm::vec4 color = TraceRay(scene, ray);
 
-			color = glm::clamp(color, glm::vec4(0), glm::vec4(1));
-			color *= 255.99f;
-			uint8_t r = (uint8_t)(color.r);
-			uint8_t g = (uint8_t)(color.g);
-			uint8_t b = (uint8_t)(color.b);
-			uint8_t a = (uint8_t)(color.a);
-			
-			m_ImageData[i] = (a << 24) | (b << 16) | (g << 8) | r;
+			m_ImageData[4 * i] = color.r;
+			m_ImageData[4 * i + 1] = color.g;
+			m_ImageData[4 * i + 2] = color.b;
+			m_ImageData[4 * i + 3] = color.a;
 		}
 	}
 	m_Image->SetData(m_ImageData);

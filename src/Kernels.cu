@@ -29,13 +29,8 @@ void traceRaysKernel(RenderParams params)
     else
         color = glm::vec4(0, 0, 0, 1);
 
-    color = glm::clamp(color, glm::vec4(0), glm::vec4(1)) * 255.99f;
-    uint8_t r = (uint8_t)(color.r);
-    uint8_t g = (uint8_t)(color.g);
-    uint8_t b = (uint8_t)(color.b);
-    uint8_t a = (uint8_t)(color.a);
-    uchar4 data = make_uchar4(r, g, b, a);
-    surf2Dwrite(data, params.surface, x * 4, y);
+    float4 data = make_float4(color.r, color.g, color.b, color.a);
+    surf2Dwrite(data, params.surface, x * 16, y);
 }
 
 void traceRays(RenderParams& renderParams)

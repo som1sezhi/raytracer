@@ -8,7 +8,13 @@
 class Image
 {
 public:
-	Image(uint32_t width, uint32_t height, void* data = nullptr);
+	enum Format
+	{
+		RGBA8,
+		RGBA32F
+	};
+
+	Image(uint32_t width, uint32_t height, Format format, void* data = nullptr);
 	~Image() { Release(); }
 
 	// Allocate memory and set the image's data.
@@ -29,7 +35,7 @@ public:
 	Image& operator=(const Image&) = delete;
 
 	Image(Image&& other) noexcept
-		: m_ID(other.m_ID), m_Width(other.m_Width), m_Height(other.m_Height)
+		: m_ID(other.m_ID), m_Width(other.m_Width), m_Height(other.m_Height), m_Format(other.m_Format)
 	{
 		other.m_ID = 0; // Use the "null" texture for the old object.
 	}
@@ -42,6 +48,7 @@ public:
 			m_ID = other.m_ID;
 			m_Width = other.m_Width;
 			m_Height = other.m_Height;
+			m_Format = other.m_Format;
 		}
 	}
 
@@ -49,4 +56,5 @@ private:
 	void Release();
 	GLuint m_ID = 0;
 	uint32_t m_Width, m_Height;
+	Format m_Format;
 };
