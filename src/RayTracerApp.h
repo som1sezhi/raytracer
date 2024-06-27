@@ -5,6 +5,7 @@
 #include "CPURenderer.h"
 #include "GPURenderer.h"
 #include "Camera.h"
+#include "Scene.h"
 
 class RayTracerApp : public App
 {
@@ -16,11 +17,12 @@ public:
 private:
 	CPURenderer m_CPURenderer;
 	GPURenderer m_GPURenderer;
-	int m_CurrRendererIdx = 1;
+	int m_CurrRendererIdx = 0;
 
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 	glm::vec2 m_LastMousePos{ 0, 0 };
 
+	Scene m_Scene;
 	Camera m_Camera;
 	bool m_CameraControlsActive = false;
 	float m_CameraMovementSpeed = 5.0f;

@@ -13,7 +13,8 @@ add_library(core STATIC
     "src/core/App.cpp"
     "src/core/Image.cpp"
     "src/core/Timer.cpp"
- "src/core/Input.cpp")
+    "src/core/Input.cpp"
+)
 target_link_libraries(core PUBLIC
     ${OPENGL_gl_LIBRARY}
     glad
@@ -29,7 +30,8 @@ add_executable(raytracer
     "src/GPURenderer.cpp"
     "src/Kernels.cu"
     "src/ErrorCheck.cpp"
- "src/Ray.h" "src/Camera.h" "src/Camera.cpp")
+    "src/Camera.cpp"
+)
 target_link_libraries(raytracer PRIVATE
     core
 )

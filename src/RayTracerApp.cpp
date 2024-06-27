@@ -6,7 +6,10 @@
 RayTracerApp::RayTracerApp(const AppSpec &spec)
 	: App(spec),
     m_Camera(45, 0.1f, 100.0f)
-{}
+{
+    m_Camera.Move({ 0, 0, 3 });
+    m_Scene.spheres.push_back(Sphere{});
+}
 
 void RayTracerApp::Update()
 {
@@ -103,7 +106,7 @@ void RayTracerApp::RenderUI()
     m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
 
     Timer timer;
-    renderer->Render(m_Camera);
+    renderer->Render(m_Scene, m_Camera);
     float renderTimeMs = timer.GetElapsedSecs() * 1000.0f;
 
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());

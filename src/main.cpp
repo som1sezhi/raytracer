@@ -3,7 +3,7 @@
 int main(int, char**)
 {
     AppSpec spec;
-    spec.title = "cool gpu-rendered gradient";
+    spec.title = "Ray Tracing";
     spec.width = 1280;
     spec.height = 720;
 

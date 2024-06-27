@@ -32,7 +32,7 @@ void GPURenderer::OnResize(uint32_t width, uint32_t height)
 	));
 }
 
-void GPURenderer::Render(Camera& camera)
+void GPURenderer::Render(Scene& scene, Camera& camera)
 {
 	if (!m_Image)
 		return;
