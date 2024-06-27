@@ -6,17 +6,20 @@ project(raytracer LANGUAGES CXX C CUDA)
 find_package(OpenGL REQUIRED)
 add_subdirectory(extern)
 
+set(CMAKE_CXX_STANDARD 20)
+
 # Core app library (stuff I could potentially reuse in future Dear ImGui projs)
 add_library(core STATIC
     "src/core/App.cpp"
     "src/core/Image.cpp"
     "src/core/Timer.cpp"
-)
+ "src/core/Input.cpp")
 target_link_libraries(core PUBLIC
     ${OPENGL_gl_LIBRARY}
     glad
     glfw
     imgui
+    glm
 )
 
 add_executable(raytracer
@@ -26,7 +29,7 @@ add_executable(raytracer
     "src/GPURenderer.cpp"
     "src/Kernels.cu"
     "src/ErrorCheck.cpp"
-)
+ "src/Ray.h" "src/Camera.h" "src/Camera.cpp")
 target_link_libraries(raytracer PRIVATE
     core
 )

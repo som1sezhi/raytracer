@@ -10,6 +10,8 @@
 #define GL_SILENCE_DEPRECATION
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
+#include "Input.h"
+
 struct AppSpec
 {
 	std::string Title = "App";
@@ -32,6 +34,11 @@ public:
 
 	// Render the GUI.
 	virtual void RenderUI() {}
+
+	GLFWwindow* GetWindow() const { return m_Window; }
+
+protected:
+	const Input m_Input;
 
 private:
 	GLFWwindow *m_Window;

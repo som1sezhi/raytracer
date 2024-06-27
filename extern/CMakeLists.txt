@@ -31,3 +31,6 @@ target_include_directories(imgui PUBLIC
     "${IMGUI_DIR}/misc/cpp"
 )
 target_link_libraries(imgui PUBLIC glfw ${OPENGL_gl_LIBRARY})
+
+# glm
+add_subdirectory(glm)

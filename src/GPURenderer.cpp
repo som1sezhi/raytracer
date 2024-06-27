@@ -32,21 +32,33 @@ void GPURenderer::OnResize(uint32_t width, uint32_t height)
 	));
 }
 
-void GPURenderer::Render()
+void GPURenderer::Render(Camera& camera)
 {
 	if (!m_Image)
 		return;
 
+	camera.RecalcMatrices();
+
+	CU_CHECK(cudaGraphicsMapResources(1, &m_ImageCudaResource, (cudaStream_t)0));
+
 	cudaArray* imgArray;
+	CU_CHECK(cudaGraphicsSubResourceGetMappedArray(&imgArray, m_ImageCudaResource, 0, 0));
+
 	cudaSurfaceObject_t surfObj;
 	cudaResourceDesc surfObjResourceDesc;
 	memset(&surfObjResourceDesc, 0, sizeof(surfObjResourceDesc));
 	surfObjResourceDesc.resType = cudaResourceTypeArray;
-
-	CU_CHECK(cudaGraphicsMapResources(1, &m_ImageCudaResource, (cudaStream_t)0));
-	CU_CHECK(cudaGraphicsSubResourceGetMappedArray(&imgArray, m_ImageCudaResource, 0, 0));
 	surfObjResourceDesc.res.array.array = imgArray;
 	CU_CHECK(cudaCreateSurfaceObject(&surfObj, &surfObjResourceDesc));
-	traceRays(surfObj, m_Image->GetWidth(), m_Image->GetHeight());
+
+	RenderParams params{
+		.Surface = surfObj,
+		.Camera = camera,
+		.Width = m_Image->GetWidth(),
+		.Height = m_Image->GetHeight()
+	};
+
+	traceRays(params);
+
 	CU_CHECK(cudaGraphicsUnmapResources(1, &m_ImageCudaResource, (cudaStream_t)0));
 }

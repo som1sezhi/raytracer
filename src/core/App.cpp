@@ -52,6 +52,7 @@ static void GLAPIENTRY glErrorCallback(
 
 
 App::App(const AppSpec &spec)
+    : m_Input(*this)
 {
     glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit())
