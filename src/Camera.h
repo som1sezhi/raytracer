@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <cuda_runtime.h>
@@ -22,13 +21,13 @@ public:
 	const glm::vec3& GetForwardDir() const { return m_ForwardDir; }
 	const glm::mat4& GetInvViewMatrix() const { return m_InvViewMatrix; }
 	const glm::mat4& GetInvProjectionMatrix() const { return m_InvProjectionMatrix; }
-	const std::vector<glm::vec3>& GetRayDirs() { return m_CachedRayDirs; }
+	const glm::vec3* GetRayDirs() { return m_CachedRayDirs; }
 
 	__device__ Ray GetRay(uint32_t x, uint32_t y) const
 	{
-		return Ray(m_Position, CalcRayDir(x, y));
+		return { m_Position, CalcRayDir(x, y) };
 	}
-	
+
 	void RecalcMatrices();
 	void RecalcRayDirs();
 
@@ -63,11 +62,12 @@ private:
 	glm::mat4 m_InvViewMatrix{ 1.0f };
 	glm::mat4 m_InvProjectionMatrix{ 1.0f };
 
-	std::vector<glm::vec3> m_CachedRayDirs;
+	glm::vec3* m_CachedRayDirs = nullptr;
+	size_t m_CachedRayDirsSize = 0;
 
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
-	bool m_ViewNeedsRecalc = false;
-	bool m_ProjectionNeedsRecalc = false;
-	bool m_CachedRaysNeedRecalc = false;
+	bool m_ViewNeedsRecalc = true;
+	bool m_ProjectionNeedsRecalc = true;
+	bool m_CachedRaysNeedRecalc = true;
 };

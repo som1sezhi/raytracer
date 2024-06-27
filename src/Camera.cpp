@@ -25,13 +25,7 @@
 
 Camera::Camera(float verticalFOV, float nearClip, float farClip)
 	: m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip)
-{
-	RecalcViewMatrix();
-	// Since the camera initializes with viewport width/height of 0, this will
-	// create a nonsensical projection matrix if we calculate it now.
-	// Wait until the camera is given the viewport dimensions via OnResize()
-	// before calculating the projection matrix.
-}
+{}
 
 void Camera::OnResize(uint32_t width, uint32_t height)
 {
@@ -98,7 +92,15 @@ void Camera::RecalcRayDirs()
 	if (!m_CachedRaysNeedRecalc)
 		return;
 
-	m_CachedRayDirs.resize(m_ViewportWidth * m_ViewportHeight);
+	// Resize the cache array if the viewport size changed.
+	// We use an array instead of an std::vector to avoid copying the vector's
+	// contents when copying the Camera to the GPU.
+	if (m_ViewportWidth * m_ViewportHeight != m_CachedRayDirsSize)
+	{
+		delete[] m_CachedRayDirs;
+		m_CachedRayDirs = new glm::vec3[m_ViewportWidth * m_ViewportHeight];
+		m_CachedRayDirsSize = m_ViewportWidth * m_ViewportHeight;
+	}	
 
 	for (uint32_t y = 0; y < m_ViewportHeight; y++)
 	{
