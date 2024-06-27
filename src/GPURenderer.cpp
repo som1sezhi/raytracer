@@ -52,10 +52,10 @@ void GPURenderer::Render(Camera& camera)
 	CU_CHECK(cudaCreateSurfaceObject(&surfObj, &surfObjResourceDesc));
 
 	RenderParams params{
-		.Surface = surfObj,
-		.Camera = camera,
-		.Width = m_Image->GetWidth(),
-		.Height = m_Image->GetHeight()
+		.surface = surfObj,
+		.camera = camera,
+		.width = m_Image->GetWidth(),
+		.height = m_Image->GetHeight()
 	};
 
 	traceRays(params);

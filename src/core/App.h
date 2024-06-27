@@ -14,9 +14,9 @@
 
 struct AppSpec
 {
-	std::string Title = "App";
-	uint32_t Width = 1280;
-	uint32_t Height = 720;
+	std::string title = "App";
+	uint32_t width = 1280;
+	uint32_t height = 720;
 };
 
 class App

@@ -85,7 +85,7 @@ App::App(const AppSpec &spec)
 #endif
 
     // Create window with graphics context
-    m_Window = glfwCreateWindow(spec.Width, spec.Height, spec.Title.c_str(), nullptr, nullptr);
+    m_Window = glfwCreateWindow(spec.width, spec.height, spec.title.c_str(), nullptr, nullptr);
     if (m_Window == nullptr)
     {
         std::cerr << "GLFW window creation failed\n";

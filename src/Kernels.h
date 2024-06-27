@@ -9,10 +9,10 @@
 // A struct of rendering parameters to be uploaded to the GPU.
 struct RenderParams
 {
-	cudaSurfaceObject_t Surface;
-	Camera Camera;
-	uint32_t Width;
-	uint32_t Height;
+	cudaSurfaceObject_t surface;
+	Camera camera;
+	uint32_t width;
+	uint32_t height;
 };
 
 void traceRays(RenderParams& renderParams);
