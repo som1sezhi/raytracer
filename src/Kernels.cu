@@ -11,13 +11,30 @@ void traceRaysKernel(RenderParams params)
     if ((x >= params.width) || (y >= params.height))
         return;
 
-    glm::vec3 rayDir = params.camera.GetRay(x, y).dir;
-    rayDir = glm::max({ 0, 0, 0 }, rayDir) * 255.99f;
+    Ray ray = params.camera.GetRay(x, y);
 
-    uint8_t r = (uint8_t)(rayDir.r);
-    uint8_t g = (uint8_t)(rayDir.g);
-    uint8_t b = (uint8_t)(rayDir.b);
-    uchar4 data = make_uchar4(r, g, b, 255);
+    HitInfo closestHit;
+    for (size_t i = 0; i < params.spheresCount; i++)
+    {
+        Sphere* sphere = params.spheres + i;
+        HitInfo hit = sphere->Intersect(ray, 0.0f, closestHit.dist);
+
+        if (hit.dist < closestHit.dist)
+            closestHit = hit;
+    }
+
+    glm::vec4 color;
+    if (closestHit.DidHit())
+        color = glm::vec4(0.5f * closestHit.normal + 0.5f, 1.0f);
+    else
+        color = glm::vec4(0, 0, 0, 1);
+
+    color = glm::clamp(color, glm::vec4(0), glm::vec4(1)) * 255.99f;
+    uint8_t r = (uint8_t)(color.r);
+    uint8_t g = (uint8_t)(color.g);
+    uint8_t b = (uint8_t)(color.b);
+    uint8_t a = (uint8_t)(color.a);
+    uchar4 data = make_uchar4(r, g, b, a);
     surf2Dwrite(data, params.surface, x * 4, y);
 }
 

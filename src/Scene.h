@@ -12,7 +12,7 @@ struct HitInfo
 	float dist = FLT_MAX;
 	glm::vec3 normal{ 0.0f };
 
-	bool DidHit() const { return dist < FLT_MAX; }
+	__host__ __device__ bool DidHit() const { return dist < FLT_MAX; }
 };
 
 struct Sphere
@@ -20,6 +20,7 @@ struct Sphere
 	glm::vec3 center{ 0.0f };
 	float radius = 0.5f;
 
+	__host__ __device__
 	HitInfo Intersect(const Ray& ray, float minDist, float maxDist) const
 	{
 		glm::vec3 movedOrigin = ray.origin - center;

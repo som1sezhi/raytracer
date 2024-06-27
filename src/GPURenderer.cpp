@@ -39,6 +39,11 @@ void GPURenderer::Render(Scene& scene, Camera& camera)
 
 	camera.RecalcMatrices();
 
+	Sphere* d_Spheres = nullptr;
+	size_t spheresSize = scene.spheres.size() * sizeof(Sphere);
+	CU_CHECK(cudaMalloc(&d_Spheres, spheresSize));
+	CU_CHECK(cudaMemcpy(d_Spheres, scene.spheres.data(), spheresSize, cudaMemcpyHostToDevice));
+
 	CU_CHECK(cudaGraphicsMapResources(1, &m_ImageCudaResource, (cudaStream_t)0));
 
 	cudaArray* imgArray;
@@ -53,6 +58,8 @@ void GPURenderer::Render(Scene& scene, Camera& camera)
 
 	RenderParams params{
 		.surface = surfObj,
+		.spheres = d_Spheres,
+		.spheresCount = scene.spheres.size(),
 		.camera = camera,
 		.width = m_Image->GetWidth(),
 		.height = m_Image->GetHeight()
@@ -61,4 +68,6 @@ void GPURenderer::Render(Scene& scene, Camera& camera)
 	traceRays(params);
 
 	CU_CHECK(cudaGraphicsUnmapResources(1, &m_ImageCudaResource, (cudaStream_t)0));
+
+	CU_CHECK(cudaFree(d_Spheres));
 }
