@@ -3,6 +3,7 @@
 #include "ErrorCheck.h"
 #include "Kernels.h"
 #include <string.h>
+#include <stdlib.h>
 
 void GPURenderer::OnResize(uint32_t width, uint32_t height)
 {
@@ -28,8 +29,13 @@ void GPURenderer::OnResize(uint32_t width, uint32_t height)
 
 	CU_CHECK(cudaGraphicsGLRegisterImage(
 		&m_ImageCudaResource, m_Image->GetID(),
-		GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard
+		GL_TEXTURE_2D, cudaGraphicsRegisterFlagsNone
 	));
+
+	// Recreate random states array
+	CU_CHECK(cudaFree(m_RandStates));
+	CU_CHECK(cudaMalloc(&m_RandStates, width * height * sizeof(curandState)));
+	renderInit(m_RandStates, width, height);
 }
 
 void GPURenderer::Render(Scene& scene, Camera& camera)
@@ -37,7 +43,8 @@ void GPURenderer::Render(Scene& scene, Camera& camera)
 	if (!m_Image)
 		return;
 
-	camera.RecalcMatrices();
+	if (camera.RecalcMatrices())
+		m_CurNumSamples = 0;
 
 	Sphere* d_Spheres = nullptr;
 	size_t spheresSize = scene.spheres.size() * sizeof(Sphere);
@@ -62,12 +69,16 @@ void GPURenderer::Render(Scene& scene, Camera& camera)
 		.spheresCount = scene.spheres.size(),
 		.camera = camera,
 		.width = m_Image->GetWidth(),
-		.height = m_Image->GetHeight()
+		.height = m_Image->GetHeight(),
+		.randStates = m_RandStates,
+		.curNumSamples = m_CurNumSamples
 	};
 
-	traceRays(params);
+	render(params);
 
 	CU_CHECK(cudaGraphicsUnmapResources(1, &m_ImageCudaResource, (cudaStream_t)0));
 
 	CU_CHECK(cudaFree(d_Spheres));
+
+	m_CurNumSamples++;
 }

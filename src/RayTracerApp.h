@@ -17,7 +17,7 @@ public:
 private:
 	CPURenderer m_CPURenderer;
 	GPURenderer m_GPURenderer;
-	int m_CurrRendererIdx = 0;
+	int m_CurrRendererIdx = 1;
 
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 	glm::vec2 m_LastMousePos{ 0, 0 };

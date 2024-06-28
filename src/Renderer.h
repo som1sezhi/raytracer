@@ -13,4 +13,8 @@ public:
 	virtual void OnResize(uint32_t width, uint32_t height) = 0;
 	virtual void Render(Scene& scene, Camera& camera) = 0;
 	virtual Image* GetImage() = 0;
+	uint32_t GetCurNumSamples() const { return m_CurNumSamples; }
+
+protected:
+	uint32_t m_CurNumSamples = 0;
 };

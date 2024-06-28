@@ -7,6 +7,7 @@
 
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
+#include <curand_kernel.h>
 
 class GPURenderer : public Renderer
 {
@@ -19,4 +20,5 @@ public:
 private:
 	std::unique_ptr<Image> m_Image;
 	cudaGraphicsResource_t m_ImageCudaResource = nullptr;
+	curandState* m_RandStates = nullptr;
 };

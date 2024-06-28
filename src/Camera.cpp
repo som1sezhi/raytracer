@@ -52,17 +52,18 @@ void Camera::Rotate(const glm::quat& rotation)
 	m_ViewNeedsRecalc = true;
 }
 
-void Camera::RecalcMatrices()
+bool Camera::RecalcMatrices()
 {
 	m_CachedRaysNeedRecalc = m_CachedRaysNeedRecalc || m_ViewNeedsRecalc || m_ProjectionNeedsRecalc;
-	RecalcViewMatrix();
-	RecalcProjectionMatrix();
+	bool didRecalc = RecalcViewMatrix();
+	didRecalc |= RecalcProjectionMatrix();
+	return didRecalc;
 }
 
-void Camera::RecalcViewMatrix()
+bool Camera::RecalcViewMatrix()
 {
 	if (!m_ViewNeedsRecalc)
-		return;
+		return false;
 
 	m_ViewMatrix = glm::lookAt(
 		m_Position, m_Position + m_ForwardDir, glm::vec3(0, 1, 0)
@@ -70,12 +71,13 @@ void Camera::RecalcViewMatrix()
 	m_InvViewMatrix = glm::inverse(m_ViewMatrix);
 
 	m_ViewNeedsRecalc = false;
+	return true;
 }
 
-void Camera::RecalcProjectionMatrix()
+bool Camera::RecalcProjectionMatrix()
 {
 	if (!m_ProjectionNeedsRecalc)
-		return;
+		return false;
 
 	m_ProjectionMatrix = glm::perspectiveFov(
 		glm::radians(m_VerticalFOV),
@@ -85,12 +87,13 @@ void Camera::RecalcProjectionMatrix()
 	m_InvProjectionMatrix = glm::inverse(m_ProjectionMatrix);
 
 	m_ProjectionNeedsRecalc = false;
+	return true;
 }
 
-void Camera::RecalcRayDirs()
+bool Camera::RecalcRayDirs()
 {
 	if (!m_CachedRaysNeedRecalc)
-		return;
+		return false;
 
 	// Resize the cache array if the viewport size changed.
 	// We use an array instead of an std::vector to avoid copying the vector's
@@ -111,4 +114,5 @@ void Camera::RecalcRayDirs()
 	}
 
 	m_CachedRaysNeedRecalc = false;
+	return true;
 }

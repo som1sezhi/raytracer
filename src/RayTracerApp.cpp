@@ -8,8 +8,8 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
     m_Camera(45, 0.1f, 100.0f)
 {
     m_Camera.Move({ 0, 0, 3 });
-    m_Scene.spheres.push_back(Sphere{ { -1.0f, -0.5f, 0.0f }, 0.5f });
-    m_Scene.spheres.push_back(Sphere{ { 1.0f, 1.0f, -1.0f }, 1.5f });
+    m_Scene.spheres.push_back(Sphere{ { 0.0f, 0.0f, 0.0f }, 0.5f });
+    m_Scene.spheres.push_back(Sphere{ { 0.0f, -100.5f, 0.0f }, 100.0f });
 }
 
 void RayTracerApp::Update()

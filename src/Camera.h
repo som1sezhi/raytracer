@@ -28,8 +28,8 @@ public:
 		return { m_Position, CalcRayDir(x, y) };
 	}
 
-	void RecalcMatrices();
-	void RecalcRayDirs();
+	bool RecalcMatrices();
+	bool RecalcRayDirs();
 
 private:
 	__host__ __device__ glm::vec3 CalcRayDir(uint32_t x, uint32_t y) const
@@ -48,8 +48,8 @@ private:
 		return rayDir;
 	}
 
-	void RecalcViewMatrix();
-	void RecalcProjectionMatrix();
+	bool RecalcViewMatrix();
+	bool RecalcProjectionMatrix();
 
 	glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
 	glm::vec3 m_ForwardDir{ 0.0f, 0.0f, -1.0f };
