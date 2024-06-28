@@ -50,6 +50,7 @@ public:
 			m_Height = other.m_Height;
 			m_Format = other.m_Format;
 		}
+		return *this;
 	}
 
 private:

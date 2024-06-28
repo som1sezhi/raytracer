@@ -55,7 +55,7 @@ __host__ __device__
 inline float randomNormalDist(curandState* state)
 {
 	// https://stackoverflow.com/a/6178290 ported to C++
-	float theta = glm::tau<float>() * randomFloat(state);
+	float theta = 6.28318530718f * randomFloat(state);
 	float rho = glm::sqrt(-2.0f * glm::log(1.0f - randomFloat(state)));
 	return rho * glm::cos(theta);
 }

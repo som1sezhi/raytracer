@@ -2,7 +2,10 @@
 
 #include <glm/glm.hpp>
 #include <cuda_runtime.h>
-#include "Utils.h"
+#include "Ray.h"
+#include "HitInfo.h"
+#include "Material.h"
+#include "Scene.h"
 
 __host__ __device__
 HitInfo hitScene(const Ray& ray, RenderParams& params)
@@ -11,7 +14,7 @@ HitInfo hitScene(const Ray& ray, RenderParams& params)
     for (size_t i = 0; i < params.spheresCount; i++)
     {
         Sphere* sphere = params.spheres + i;
-        HitInfo hit = sphere->Intersect(ray, 0.001f, closestHit.dist);
+        HitInfo hit = sphere->Intersect(ray, 1e-8f, closestHit.dist);
 
         if (hit.dist < closestHit.dist)
             closestHit = hit;
@@ -20,7 +23,7 @@ HitInfo hitScene(const Ray& ray, RenderParams& params)
 }
 
 __host__ __device__
-glm::vec3 getRayColor(const Ray& ray, RenderParams& params, curandState* rndState)
+glm::vec3 getRayColor(const Ray& ray, RenderParams& params, curandState* state)
 {
     Ray curRay = ray;
     glm::vec3 rayColor{ 1.0f };
@@ -29,14 +32,17 @@ glm::vec3 getRayColor(const Ray& ray, RenderParams& params, curandState* rndStat
         HitInfo hit = hitScene(curRay, params);
         if (hit.DidHit())
         {
-            glm::vec3 dir = hit.normal + randomUnitVec(rndState);
-            dir = glm::normalize(dir);
-            curRay = { hit.position + 0.001f * hit.normal, dir };
-            rayColor *= 0.5f;
+            if (!hit.material->ScatterRay(curRay, hit, rayColor, curRay, state))
+                break;
+            curRay.origin += curRay.dir * 1e-4f;
         }
         else
         {
             float a = 0.5f * (curRay.dir.y + 1.0f);
+            //const glm::vec3 lightDir = glm::normalize(glm::vec3(1.0f));
+            //float a = glm::dot(curRay.dir, lightDir);
+            //a = 0.5f * a + 0.5f;
+            //a *= a;
             auto c = (1.0f - a) * glm::vec3(1.0f) + a * glm::vec3(0.5f, 0.7f, 1.0f);
             return rayColor * c;
         }

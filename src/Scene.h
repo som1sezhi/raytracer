@@ -4,21 +4,13 @@
 #include <glm/glm.hpp>
 #include <cuda_runtime.h>
 
-#include "Ray.h"
-
-struct HitInfo
-{
-	glm::vec3 position;
-	float dist = FLT_MAX;
-	glm::vec3 normal;
-
-	__host__ __device__ bool DidHit() const { return dist < FLT_MAX; }
-};
+#include "Material.h"
 
 struct Sphere
 {
 	glm::vec3 center{ 0.0f };
 	float radius = 0.5f;
+	Material material;
 
 	__host__ __device__
 	HitInfo Intersect(const Ray& ray, float minDist, float maxDist) const
@@ -45,6 +37,7 @@ struct Sphere
 		hit.dist = root;
 		hit.position = ray.At(hit.dist);
 		hit.normal = (hit.position - center) / radius;
+		hit.material = &material;
 		
 		return hit;
 	}

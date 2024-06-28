@@ -33,6 +33,7 @@ private:
 	bool m_ShowDebugInfoWindow = true;
 	bool m_ShowImGuiDemoWindow = false;
 	bool m_ShowOptionsWindow = true;
+	bool m_ShowObjectsWindow = true;
 
 	// Debug info
 	bool m_WantCaptureMouse = false;

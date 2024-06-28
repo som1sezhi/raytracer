@@ -1,6 +1,7 @@
 #include "RayTracerApp.h"
 
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 #include "core/Timer.h"
 
 RayTracerApp::RayTracerApp(const AppSpec &spec)
@@ -8,8 +9,14 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
     m_Camera(45, 0.1f, 100.0f)
 {
     m_Camera.Move({ 0, 0, 3 });
-    m_Scene.spheres.push_back(Sphere{ { 0.0f, 0.0f, 0.0f }, 0.5f });
-    m_Scene.spheres.push_back(Sphere{ { 0.0f, -100.5f, 0.0f }, 100.0f });
+    m_Scene.spheres.push_back(Sphere{
+        { 0.0f, 0.0f, 0.0f }, 0.5f,
+        Material{{0.6f, 0.15f, 0.15f}}
+    });
+    m_Scene.spheres.push_back(Sphere{
+        { 0.0f, -100.5f, 0.0f }, 100.0f,
+        Material{glm::vec3(0.5f)}
+    });
 
     m_RenderSettings = {
         .bounceLimit = 10
@@ -188,6 +195,54 @@ void RayTracerApp::RenderUI()
             "Rotation speed", &m_CameraRotationSpeed,
             0.005f, -FLT_MAX, +FLT_MAX
         );
+
+        ImGui::End();
+    }
+
+    // ================ Objects window ================
+    if (m_ShowObjectsWindow)
+    {
+        ImGui::Begin("Objects", &m_ShowObjectsWindow);
+
+        int toDelete = -1;
+        for (size_t i = 0; i < m_Scene.spheres.size(); i++)
+        {
+            Sphere& sphere = m_Scene.spheres[i];
+            ImGui::PushID(i);
+
+            ImGui::Text("Sphere");
+            ImGui::SameLine(ImGui::GetWindowWidth() - 64.0f);
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 0.8f, 0.8f));
+            if (ImGui::SmallButton("Delete"))
+                toDelete = i;
+            ImGui::PopStyleColor(3);
+
+            if (ImGui::DragFloat3("Position", glm::value_ptr(sphere.center), 0.1f))
+                renderer->ResetCurNumSamples();
+            if (ImGui::DragFloat("Radius", &sphere.radius, 0.05f, 0.0f, FLT_MAX))
+                renderer->ResetCurNumSamples();
+            if (ImGui::ColorEdit3("Color", glm::value_ptr(sphere.material.color)))
+                renderer->ResetCurNumSamples();
+            ImGui::Separator();
+            ImGui::PopID();
+        }
+
+        if (toDelete != -1)
+        {
+            m_Scene.spheres.erase(m_Scene.spheres.begin() + toDelete);
+            renderer->ResetCurNumSamples();
+        }
+
+        if (ImGui::Button("Add sphere"))
+        {
+            m_Scene.spheres.push_back(Sphere{
+                glm::vec3(0.0f), 0.5f,
+                Material{glm::vec3(0.5f)}
+            });
+            renderer->ResetCurNumSamples();
+        }
 
         ImGui::End();
     }
