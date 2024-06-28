@@ -12,6 +12,21 @@ inline bool nearZero(const glm::vec3& v)
 	return absV.x < eps && absV.y < eps && absV.z < eps;
 }
 
+// Convert a gamma-transformed color to a linear color for gamma = 2.
+__host__ __device__
+inline glm::vec3 gammaToLinear(const glm::vec3& color)
+{
+	return color * color;
+}
+
+// Convert a linear color to a gamma-transformed color for gamma = 2.
+__host__ __device__
+inline glm::vec3 linearToGamma(const glm::vec3& color)
+{
+	glm::vec3 c = glm::max(color, glm::vec3(0.0));
+	return glm::sqrt(c);
+}
+
 // Generate a random value in the interval [0, 1).
 __host__ __device__
 inline float randomFloat(curandState* state)

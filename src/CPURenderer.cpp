@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include "TracingRoutines.h"
+#include "Utils.h"
 
 void CPURenderer::OnResize(uint32_t width, uint32_t height)
 {
@@ -66,8 +67,10 @@ void CPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& set
 			glm::vec3 old = *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i);
 
 			//  Accumulate color
+			old = gammaToLinear(old);
 			color = ((float) m_CurNumSamples * old + color)
 				/ ((float) m_CurNumSamples + 1);
+			color = linearToGamma(color);
 
 			*reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i) = color;
 			m_ImageData[4 * i + 3] = 1.0f;

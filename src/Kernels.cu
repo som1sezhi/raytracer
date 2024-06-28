@@ -45,8 +45,10 @@ void renderKernel(RenderKernelParams params)
     glm::vec3 old{ oldData.x, oldData.y, oldData.z };
 
     //  Accumulate color
+    old = gammaToLinear(old);
     color = ((float)params.curNumSamples * old + color)
         / ((float)params.curNumSamples + 1);
+    color = linearToGamma(color);
 
     // Write new color to surface
     float4 data = make_float4(color.r, color.g, color.b, 1.0f);
