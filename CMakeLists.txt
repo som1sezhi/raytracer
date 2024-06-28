@@ -31,6 +31,7 @@ add_executable(raytracer
     "src/Kernels.cu"
     "src/ErrorCheck.cpp"
     "src/Camera.cpp"
+    "src/TracingRoutines.cu"
 )
 target_link_libraries(raytracer PRIVATE
     core

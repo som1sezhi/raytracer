@@ -1,6 +1,7 @@
 #include "CPURenderer.h"
 
 #include <stdio.h>
+#include "TracingRoutines.h"
 
 void CPURenderer::OnResize(uint32_t width, uint32_t height)
 {
@@ -31,12 +32,13 @@ void CPURenderer::OnResize(uint32_t width, uint32_t height)
 	m_ImageData = new float[width * height * 4];
 }
 
-void CPURenderer::Render(Scene& scene, Camera& camera)
+void CPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& settings)
 {
 	if (!m_Image)
 		return;
 
-	camera.RecalcMatrices();
+	if (camera.RecalcMatrices())
+		m_CurNumSamples = 0;
 	camera.RecalcRayDirs();
 	auto rayDirs = camera.GetRayDirs();
 
@@ -44,6 +46,14 @@ void CPURenderer::Render(Scene& scene, Camera& camera)
 	uint32_t height = m_Image->GetHeight();
 	Ray ray;
 	ray.origin = camera.GetPosition();
+
+	RenderParams params = {
+		.spheres = scene.spheres.data(),
+		.spheresCount = scene.spheres.size(),
+		.camera = camera,
+		.settings = settings
+	};
+
 	for (uint32_t y = 0; y < height; y++)
 	{
 		for (uint32_t x = 0; x < width; x++)
@@ -51,32 +61,19 @@ void CPURenderer::Render(Scene& scene, Camera& camera)
 			uint32_t i = x + y * width;
 			ray.dir = rayDirs[i];
 
-			glm::vec4 color = TraceRay(scene, ray);
+			glm::vec3 color = getRayColor(ray, params);
 
-			m_ImageData[4 * i] = color.r;
-			m_ImageData[4 * i + 1] = color.g;
-			m_ImageData[4 * i + 2] = color.b;
-			m_ImageData[4 * i + 3] = color.a;
+			glm::vec3 old = *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i);
+
+			//  Accumulate color
+			color = ((float) m_CurNumSamples * old + color)
+				/ ((float) m_CurNumSamples + 1);
+
+			*reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i) = color;
+			m_ImageData[4 * i + 3] = 1.0f;
 		}
 	}
 	m_Image->SetData(m_ImageData);
-}
 
-glm::vec4 CPURenderer::TraceRay(Scene& scene, Ray& ray)
-{
-	HitInfo closestHit;
-	for (const Sphere& sphere : scene.spheres)
-	{
-		HitInfo hit = sphere.Intersect(ray, 0.0f, closestHit.dist);
-
-		if (hit.dist < closestHit.dist)
-			closestHit = hit;
-	}
-
-	if (closestHit.DidHit())
-	{
-		return glm::vec4(0.5f * closestHit.normal + 0.5f, 1.0f);
-	}
-	else
-		return glm::vec4(0, 0, 0, 1);
+	m_CurNumSamples++;
 }

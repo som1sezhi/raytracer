@@ -38,11 +38,12 @@ void GPURenderer::OnResize(uint32_t width, uint32_t height)
 	renderInit(m_RandStates, width, height);
 }
 
-void GPURenderer::Render(Scene& scene, Camera& camera)
+void GPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& settings)
 {
 	if (!m_Image)
 		return;
 
+	// Clear screen and restart rendering if camera moved
 	if (camera.RecalcMatrices())
 		m_CurNumSamples = 0;
 
@@ -63,11 +64,14 @@ void GPURenderer::Render(Scene& scene, Camera& camera)
 	surfObjResourceDesc.res.array.array = imgArray;
 	CU_CHECK(cudaCreateSurfaceObject(&surfObj, &surfObjResourceDesc));
 
-	RenderParams params{
-		.surface = surfObj,
-		.spheres = d_Spheres,
-		.spheresCount = scene.spheres.size(),
-		.camera = camera,
+	RenderKernelParams params{
+		.renderParams = {
+			.spheres = d_Spheres,
+			.spheresCount = scene.spheres.size(),
+			.camera = camera,
+			.settings = settings
+		},
+		.surface = surfObj,		
 		.width = m_Image->GetWidth(),
 		.height = m_Image->GetHeight(),
 		.randStates = m_RandStates,

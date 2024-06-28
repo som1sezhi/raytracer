@@ -11,10 +11,9 @@ public:
 	CPURenderer() = default;
 
 	virtual void OnResize(uint32_t width, uint32_t height) override;
-	virtual void Render(Scene& scene, Camera& camera) override;
+	virtual void Render(Scene& scene, Camera& camera, const RenderSettings& settings) override;
 	virtual Image* GetImage() override { return m_Image.get(); }
 private:
-	glm::vec4 TraceRay(Scene& scene, Ray& ray);
 	std::unique_ptr<Image> m_Image;
 	float* m_ImageData = nullptr;
 };

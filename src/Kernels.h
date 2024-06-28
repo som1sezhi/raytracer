@@ -7,18 +7,16 @@
 
 #include "Camera.h"
 #include "Scene.h"
+#include "TracingRoutines.h"
 
-// A struct of rendering parameters to be uploaded to the GPU.
-struct RenderParams
+// A struct of rendering parameters and info to be uploaded to the GPU.
+struct RenderKernelParams
 {
+	// Actual rendering parameters
+	RenderParams renderParams;
+
 	// Image to read from/render to
 	cudaSurfaceObject_t surface;
-
-	// Scene
-	Sphere* spheres;
-	size_t spheresCount;
-
-	Camera camera;
 
 	// Viewport dimensions
 	uint32_t width;
@@ -29,4 +27,4 @@ struct RenderParams
 };
 
 void renderInit(curandState* states, uint32_t width, uint32_t height);
-void render(RenderParams& renderParams);
+void render(RenderKernelParams& kernelParams);

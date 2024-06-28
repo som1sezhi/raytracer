@@ -10,6 +10,10 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
     m_Camera.Move({ 0, 0, 3 });
     m_Scene.spheres.push_back(Sphere{ { 0.0f, 0.0f, 0.0f }, 0.5f });
     m_Scene.spheres.push_back(Sphere{ { 0.0f, -100.5f, 0.0f }, 100.0f });
+
+    m_RenderSettings = {
+        .bounceLimit = 10
+    };
 }
 
 void RayTracerApp::Update()
@@ -107,7 +111,7 @@ void RayTracerApp::RenderUI()
     m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
 
     Timer timer;
-    renderer->Render(m_Scene, m_Camera);
+    renderer->Render(m_Scene, m_Camera, m_RenderSettings);
     float renderTimeMs = timer.GetElapsedSecs() * 1000.0f;
 
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
@@ -127,12 +131,14 @@ void RayTracerApp::RenderUI()
     if (m_ShowImGuiDemoWindow)
         ImGui::ShowDemoWindow(&m_ShowImGuiDemoWindow);
 
+    // ================ Debug ingo window ================
     if (m_ShowDebugInfoWindow)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Begin("Debug Info", &m_ShowDebugInfoWindow);
         ImGui::Text("Render time: %.3f ms", renderTimeMs);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::Text("Samples: %d", renderer->GetCurNumSamples());
         ImGui::Text("WantCaptureMouse: %d", m_WantCaptureMouse);
         ImGui::Text("WantCaptureKeyboard: %d", m_WantCaptureKeyboard);
         ImGui::End();
@@ -168,7 +174,10 @@ void RayTracerApp::RenderUI()
         ImGui::Begin("Options", &m_ShowOptionsWindow);
 
         ImGui::SeparatorText("Renderer");
-        ImGui::Combo("Viewport renderer", &m_CurrRendererIdx, "CPU\0GPU\0\0");
+        if (ImGui::Combo("Viewport renderer", &m_CurrRendererIdx, "CPU\0GPU\0\0"))
+            renderer->ResetCurNumSamples();
+        if (ImGui::DragInt("Bounce limit", &m_RenderSettings.bounceLimit, 0.05f, 0, 100))
+            renderer->ResetCurNumSamples();
 
         ImGui::SeparatorText("Camera");
         ImGui::DragFloat(

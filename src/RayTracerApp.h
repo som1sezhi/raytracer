@@ -28,6 +28,8 @@ private:
 	float m_CameraMovementSpeed = 5.0f;
 	float m_CameraRotationSpeed = 0.9f;
 
+	RenderSettings m_RenderSettings;
+
 	bool m_ShowDebugInfoWindow = true;
 	bool m_ShowImGuiDemoWindow = false;
 	bool m_ShowOptionsWindow = true;
