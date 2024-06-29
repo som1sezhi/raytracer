@@ -113,6 +113,7 @@ void RayTracerApp::RenderUI()
 {
     static Renderer* renderers[2] = { &m_CPURenderer, &m_GPURenderer };
     Renderer* renderer = renderers[m_CurrRendererIdx];
+    bool doRenderReset = false;
 
     renderer->OnResize(m_ViewportWidth, m_ViewportHeight);
     m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
@@ -181,10 +182,8 @@ void RayTracerApp::RenderUI()
         ImGui::Begin("Options", &m_ShowOptionsWindow);
 
         ImGui::SeparatorText("Renderer");
-        if (ImGui::Combo("Viewport renderer", &m_CurrRendererIdx, "CPU\0GPU\0\0"))
-            renderer->ResetCurNumSamples();
-        if (ImGui::DragInt("Bounce limit", &m_RenderSettings.bounceLimit, 0.05f, 0, 100))
-            renderer->ResetCurNumSamples();
+        doRenderReset |= ImGui::Combo("Viewport renderer", &m_CurrRendererIdx, "CPU\0GPU\0\0");
+        doRenderReset |= ImGui::DragInt("Bounce limit", &m_RenderSettings.bounceLimit, 0.05f, 0, 100);
 
         ImGui::SeparatorText("Camera");
         ImGui::DragFloat(
@@ -219,12 +218,9 @@ void RayTracerApp::RenderUI()
                 toDelete = i;
             ImGui::PopStyleColor(3);
 
-            if (ImGui::DragFloat3("Position", glm::value_ptr(sphere.center), 0.1f))
-                renderer->ResetCurNumSamples();
-            if (ImGui::DragFloat("Radius", &sphere.radius, 0.05f, 0.0f, FLT_MAX))
-                renderer->ResetCurNumSamples();
-            if (ImGui::ColorEdit3("Color", glm::value_ptr(sphere.material.color)))
-                renderer->ResetCurNumSamples();
+            doRenderReset |= ImGui::DragFloat3("Position", glm::value_ptr(sphere.center), 0.05f);
+            doRenderReset |= ImGui::DragFloat("Radius", &sphere.radius, 0.025f, 0.0f, FLT_MAX);
+            doRenderReset |= ImGui::ColorEdit3("Color", glm::value_ptr(sphere.material.color));
             ImGui::Separator();
             ImGui::PopID();
         }
@@ -232,7 +228,7 @@ void RayTracerApp::RenderUI()
         if (toDelete != -1)
         {
             m_Scene.spheres.erase(m_Scene.spheres.begin() + toDelete);
-            renderer->ResetCurNumSamples();
+            doRenderReset = true;
         }
 
         if (ImGui::Button("Add sphere"))
@@ -241,9 +237,12 @@ void RayTracerApp::RenderUI()
                 glm::vec3(0.0f), 0.5f,
                 Material{glm::vec3(0.5f)}
             });
-            renderer->ResetCurNumSamples();
+            doRenderReset = true;
         }
 
         ImGui::End();
     }
+
+    if (doRenderReset)
+        renderer->ResetCurNumSamples();
 }
