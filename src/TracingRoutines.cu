@@ -23,7 +23,7 @@ HitInfo hitScene(const Ray& ray, RenderParams& params)
 }
 
 __host__ __device__
-glm::vec3 getRayColor(const Ray& ray, RenderParams& params, curandState* state)
+glm::vec3 getRayColor(const Ray& ray, RenderParams& params, uint32_t& seed)
 {
     Ray curRay = ray;
     glm::vec3 rayColor{ 1.0f };
@@ -32,7 +32,7 @@ glm::vec3 getRayColor(const Ray& ray, RenderParams& params, curandState* state)
         HitInfo hit = hitScene(curRay, params);
         if (hit.DidHit())
         {
-            if (!hit.material->ScatterRay(curRay, hit, rayColor, curRay, state))
+            if (!hit.material->ScatterRay(curRay, hit, rayColor, curRay, seed))
                 break;
             curRay.origin += curRay.dir * 1e-4f;
         }

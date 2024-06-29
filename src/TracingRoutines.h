@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cuda_runtime.h>
-#include <curand_kernel.h>
 #include "Ray.h"
 #include "Scene.h"
 #include "Camera.h"
@@ -18,4 +17,4 @@ struct RenderParams
 };
 
 __host__ __device__
-glm::vec3 getRayColor(const Ray& ray, RenderParams& params, curandState* rndState = nullptr);
+glm::vec3 getRayColor(const Ray& ray, RenderParams& params, uint32_t& seed);

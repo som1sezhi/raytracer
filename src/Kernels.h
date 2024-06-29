@@ -22,9 +22,7 @@ struct RenderKernelParams
 	uint32_t width;
 	uint32_t height;
 
-	curandState* randStates;	// Random states for each pixel
 	uint32_t curNumSamples;		// How many samples we accumulated so far
 };
 
-void renderInit(curandState* states, uint32_t width, uint32_t height);
 void render(RenderKernelParams& kernelParams);

@@ -17,10 +17,10 @@ struct Material
 		const HitInfo& hit,
 		glm::vec3& hitColor,
 		Ray& rayOut,
-		curandState* state
+		uint32_t& seed
 	) const
 	{
-		glm::vec3 dir = hit.normal + randomUnitVec(state);
+		glm::vec3 dir = hit.normal + randomUnitVec(seed);
 		// Catch degenerate scatter direction
 		if (nearZero(dir))
 			dir = hit.normal;

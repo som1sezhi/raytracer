@@ -2,7 +2,6 @@
 
 #include <random>
 #include <glm/glm.hpp>
-#include <curand_kernel.h>
 
 __host__ __device__
 inline bool nearZero(const glm::vec3& v)
@@ -27,52 +26,55 @@ inline glm::vec3 linearToGamma(const glm::vec3& color)
 	return glm::sqrt(c);
 }
 
+__host__ __device__
+inline uint32_t pcgHash(uint32_t input)
+{
+	uint32_t state = input * 747796405u + 2891336453u;
+	uint32_t word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	return (word >> 22u) ^ word;
+}
+
 // Generate a random value in the interval [0, 1).
 __host__ __device__
-inline float randomFloat(curandState* state)
+inline float randomFloat(uint32_t& seed)
 {
-#ifdef __CUDA_ARCH__
-	float x = curand_uniform((curandState*) state);
+	seed = pcgHash(seed);
+	float x = (float)seed / (float)UINT32_MAX;
 	return x == 1.0f ? 0.0f : x;
-#else
-	static std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
-	static std::mt19937 generator;
-	return distribution(generator);
-#endif
 }
 
 __host__ __device__
-inline glm::vec3 randomVec(curandState* state)
+inline glm::vec3 randomVec(uint32_t& seed)
 {
 	return {
-		randomFloat(state),
-		randomFloat(state),
-		randomFloat(state)
+		randomFloat(seed),
+		randomFloat(seed),
+		randomFloat(seed)
 	};
 }
 
 __host__ __device__
-inline float randomNormalDist(curandState* state)
+inline float randomNormalDist(uint32_t& seed)
 {
 	// https://stackoverflow.com/a/6178290 ported to C++
-	float theta = 6.28318530718f * randomFloat(state);
-	float rho = glm::sqrt(-2.0f * glm::log(1.0f - randomFloat(state)));
+	float theta = 6.28318530718f * randomFloat(seed);
+	float rho = glm::sqrt(-2.0f * glm::log(1.0f - randomFloat(seed)));
 	return rho * glm::cos(theta);
 }
 
 __host__ __device__
-inline glm::vec3 randomUnitVec(curandState* state)
+inline glm::vec3 randomUnitVec(uint32_t& seed)
 {
 #ifdef __CUDA_ARCH__
 	glm::vec3 v = {
-		randomNormalDist(state),
-		randomNormalDist(state),
-		randomNormalDist(state)
+		randomNormalDist(seed),
+		randomNormalDist(seed),
+		randomNormalDist(seed)
 	};
 #else
-	glm::vec3 v = randomVec(state) * 2.0f - 1.0f;
+	glm::vec3 v = randomVec(seed) * 2.0f - 1.0f;
 	while (glm::dot(v, v) > 1.0f)
-		v = randomVec(state) * 2.0f - 1.0f;
+		v = randomVec(seed) * 2.0f - 1.0f;
 #endif
 	
 	if (v == glm::vec3(0.0f))
@@ -81,9 +83,9 @@ inline glm::vec3 randomUnitVec(curandState* state)
 }
 
 __host__ __device__
-inline glm::vec3 randomOnHemisphere(const glm::vec3& normal, curandState* state)
+inline glm::vec3 randomOnHemisphere(const glm::vec3& normal, uint32_t& seed)
 {
-	glm::vec3 v = randomUnitVec(state);
+	glm::vec3 v = randomUnitVec(seed);
 	if (glm::dot(v, normal) > 0.0f)
 		return v;
 	return -v;

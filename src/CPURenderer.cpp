@@ -62,7 +62,9 @@ void CPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& set
 			uint32_t i = x + y * width;
 			ray.dir = rayDirs[i];
 
-			glm::vec3 color = getRayColor(ray, params);
+			uint32_t seed = i * (m_CurNumSamples + 1);
+
+			glm::vec3 color = getRayColor(ray, params, seed);
 
 			glm::vec3 old = *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i);
 

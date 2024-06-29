@@ -31,11 +31,6 @@ void GPURenderer::OnResize(uint32_t width, uint32_t height)
 		&m_ImageCudaResource, m_Image->GetID(),
 		GL_TEXTURE_2D, cudaGraphicsRegisterFlagsNone
 	));
-
-	// Recreate random states array
-	CU_CHECK(cudaFree(m_RandStates));
-	CU_CHECK(cudaMalloc(&m_RandStates, width * height * sizeof(curandState)));
-	renderInit(m_RandStates, width, height);
 }
 
 void GPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& settings)
@@ -74,7 +69,6 @@ void GPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& set
 		.surface = surfObj,		
 		.width = m_Image->GetWidth(),
 		.height = m_Image->GetHeight(),
-		.randStates = m_RandStates,
 		.curNumSamples = m_CurNumSamples
 	};
 

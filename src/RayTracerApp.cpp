@@ -19,7 +19,7 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
     });
 
     m_RenderSettings = {
-        .bounceLimit = 10
+        .bounceLimit = 5
     };
 }
 
@@ -139,13 +139,27 @@ void RayTracerApp::RenderUI()
     if (m_ShowImGuiDemoWindow)
         ImGui::ShowDemoWindow(&m_ShowImGuiDemoWindow);
 
-    // ================ Debug ingo window ================
+    // ================ Debug info window ================
     if (m_ShowDebugInfoWindow)
     {
+        // Calculate the average of the last 20 render times
+        static float buffer[20];
+        static int numEntries = 0;
+        static int bufferIdx = 0;
+        buffer[bufferIdx] = renderTimeMs;
+        bufferIdx = (++bufferIdx) % 20;
+        if (numEntries < 20)
+            numEntries++;
+        float avg = 0.0f;
+        for (int i = 0; i < numEntries; i++)
+            avg += buffer[i];
+        avg /= (float)numEntries;
+
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Begin("Debug Info", &m_ShowDebugInfoWindow);
         ImGui::Text("Render time: %.3f ms", renderTimeMs);
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::Text("Avg. of last 20 renders: %.3f ms", avg);
+        ImGui::Text("Avg. %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::Text("Samples: %d", renderer->GetCurNumSamples());
         ImGui::Text("WantCaptureMouse: %d", m_WantCaptureMouse);
         ImGui::Text("WantCaptureKeyboard: %d", m_WantCaptureKeyboard);

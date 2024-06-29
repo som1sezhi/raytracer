@@ -20,5 +20,4 @@ public:
 private:
 	std::unique_ptr<Image> m_Image;
 	cudaGraphicsResource_t m_ImageCudaResource = nullptr;
-	curandState* m_RandStates = nullptr;
 };
