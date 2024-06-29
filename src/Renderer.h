@@ -8,6 +8,8 @@
 struct RenderSettings
 {
 	int bounceLimit = 1;
+	glm::vec3 skyColor1;
+	glm::vec3 skyColor2;
 };
 
 class Renderer

@@ -10,12 +10,15 @@
 struct Material
 {
 	glm::vec3 color;
+	glm::vec3 emissionColor{ 1.0f };
+	float emissionStrength = 0.0f;
 
 	__host__ __device__
 	bool ScatterRay(
 		const Ray& rayIn,
 		const HitInfo& hit,
-		glm::vec3& hitColor,
+		glm::vec3& absorption,
+		glm::vec3& light,
 		Ray& rayOut,
 		uint32_t& seed
 	) const
@@ -27,7 +30,8 @@ struct Material
 		else
 			dir = glm::normalize(dir);
 		rayOut = { hit.position, dir };
-		hitColor *= color;
+		absorption = color;
+		light = emissionColor * emissionStrength;
 		return true;
 	}
 };

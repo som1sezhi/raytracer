@@ -26,14 +26,20 @@ __host__ __device__
 glm::vec3 getRayColor(const Ray& ray, RenderParams& params, uint32_t& seed)
 {
     Ray curRay = ray;
-    glm::vec3 rayColor{ 1.0f };
+    glm::vec3 lightAbsorption{ 1.0f };
+    glm::vec3 lightCollected{ 0.0f };
     for (int i = 0; i <= params.settings.bounceLimit; i++)
     {
         HitInfo hit = hitScene(curRay, params);
         if (hit.DidHit())
         {
-            if (!hit.material->ScatterRay(curRay, hit, rayColor, curRay, seed))
+            glm::vec3 absorption, emission;
+            if (!hit.material->ScatterRay(curRay, hit, absorption, emission, curRay, seed))
                 break;
+            lightCollected += emission * lightAbsorption;
+            lightAbsorption *= absorption;
+            // Nudge the ray origin a little off the surface to prevent
+            // shadow acne
             curRay.origin += curRay.dir * 1e-4f;
         }
         else
@@ -43,10 +49,10 @@ glm::vec3 getRayColor(const Ray& ray, RenderParams& params, uint32_t& seed)
             //float a = glm::dot(curRay.dir, lightDir);
             //a = 0.5f * a + 0.5f;
             //a *= a;
-            auto c = (1.0f - a) * glm::vec3(1.0f) + a * glm::vec3(0.5f, 0.7f, 1.0f);
-            return rayColor * c;
+            auto sky = a * params.settings.skyColor1 + (1.0f - a) * params.settings.skyColor2;
+            return lightCollected + sky * lightAbsorption;
         }
     }
 
-    return glm::vec3(0.0f);
+    return lightCollected;
 }

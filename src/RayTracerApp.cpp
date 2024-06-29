@@ -4,6 +4,17 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "core/Timer.h"
 
+// Wrapper around ColorEdit3 that performs gamma correction.
+// Users set color as sRGB, color is written to memory as linear RGB.
+static bool gammaColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0)
+{
+    glm::vec3& linear = *reinterpret_cast<glm::vec3*>(col);
+    glm::vec3 sRGB = linearToGamma(linear);
+    bool changed = ImGui::ColorEdit3(label, glm::value_ptr(sRGB), flags);
+    linear = gammaToLinear(sRGB);
+    return changed;
+}
+
 RayTracerApp::RayTracerApp(const AppSpec &spec)
 	: App(spec),
     m_Camera(45, 0.1f, 100.0f)
@@ -19,7 +30,9 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
     });
 
     m_RenderSettings = {
-        .bounceLimit = 5
+        .bounceLimit = 5,
+        .skyColor1 = { 0.5f, 0.7f, 1.0f },
+        .skyColor2 = { 1.0f, 1.0f, 1.0f },
     };
 }
 
@@ -199,6 +212,10 @@ void RayTracerApp::RenderUI()
         doRenderReset |= ImGui::Combo("Viewport renderer", &m_CurrRendererIdx, "CPU\0GPU\0\0");
         doRenderReset |= ImGui::DragInt("Bounce limit", &m_RenderSettings.bounceLimit, 0.05f, 0, 100);
 
+        ImGui::SeparatorText("Sky");
+        doRenderReset |= gammaColorEdit3("Sky color 1", glm::value_ptr(m_RenderSettings.skyColor1));
+        doRenderReset |= gammaColorEdit3("Sky color 2", glm::value_ptr(m_RenderSettings.skyColor2));
+
         ImGui::SeparatorText("Camera");
         ImGui::DragFloat(
             "Movement speed", &m_CameraMovementSpeed,
@@ -234,7 +251,9 @@ void RayTracerApp::RenderUI()
 
             doRenderReset |= ImGui::DragFloat3("Position", glm::value_ptr(sphere.center), 0.05f);
             doRenderReset |= ImGui::DragFloat("Radius", &sphere.radius, 0.025f, 0.0f, FLT_MAX);
-            doRenderReset |= ImGui::ColorEdit3("Color", glm::value_ptr(sphere.material.color));
+            doRenderReset |= gammaColorEdit3("Color", glm::value_ptr(sphere.material.color));
+            doRenderReset |= gammaColorEdit3("Emission", glm::value_ptr(sphere.material.emissionColor));
+            doRenderReset |= ImGui::DragFloat("Emission strength", &sphere.material.emissionStrength, 0.1f, 0.0f, FLT_MAX);
             ImGui::Separator();
             ImGui::PopID();
         }
