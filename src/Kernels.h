@@ -12,17 +12,17 @@
 // A struct of rendering parameters and info to be uploaded to the GPU.
 struct RenderKernelParams
 {
-	// Actual rendering parameters
-	RenderParams renderParams;
+    // Actual rendering parameters
+    RenderParams renderParams;
 
-	// Image to read from/render to
-	cudaSurfaceObject_t surface;
+    // Image to read from/render to
+    cudaSurfaceObject_t surface;
 
-	// Viewport dimensions
-	uint32_t width;
-	uint32_t height;
+    // Viewport dimensions
+    uint32_t width;
+    uint32_t height;
 
-	uint32_t curNumSamples;		// How many samples we accumulated so far
+    uint32_t curNumSamples;		// How many samples we accumulated so far
 };
 
 void render(RenderKernelParams& kernelParams);

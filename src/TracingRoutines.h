@@ -8,12 +8,12 @@
 
 struct RenderParams
 {
-	Sphere* spheres;
-	size_t spheresCount;
+    Sphere* spheres;
+    size_t spheresCount;
 
-	Camera camera;
+    Camera camera;
 
-	RenderSettings settings;
+    RenderSettings settings;
 };
 
 __host__ __device__

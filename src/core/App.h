@@ -14,32 +14,32 @@
 
 struct AppSpec
 {
-	std::string title = "App";
-	uint32_t width = 1280;
-	uint32_t height = 720;
+    std::string title = "App";
+    uint32_t width = 1280;
+    uint32_t height = 720;
 };
 
 class App
 {
 public:
-	App(const AppSpec &spec);
-	~App();
+    App(const AppSpec &spec);
+    ~App();
 
-	// Start the app's main loop.
-	void Run();
+    // Start the app's main loop.
+    void Run();
 
-	// Called after polling for events and before Dear ImGui begins a new frame.
-	// Intended for responding to keyboard/mouse events.
-	virtual void Update() {}
+    // Called after polling for events and before Dear ImGui begins a new frame.
+    // Intended for responding to keyboard/mouse events.
+    virtual void Update() {}
 
-	// Render the GUI.
-	virtual void RenderUI() {}
+    // Render the GUI.
+    virtual void RenderUI() {}
 
-	GLFWwindow* GetWindow() const { return m_Window; }
+    GLFWwindow* GetWindow() const { return m_Window; }
 
 protected:
-	const Input m_Input;
+    const Input m_Input;
 
 private:
-	GLFWwindow *m_Window;
+    GLFWwindow *m_Window;
 };

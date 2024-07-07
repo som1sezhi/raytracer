@@ -16,7 +16,7 @@ static bool gammaColorEdit3(const char* label, float col[3], ImGuiColorEditFlags
 }
 
 RayTracerApp::RayTracerApp(const AppSpec &spec)
-	: App(spec),
+    : App(spec),
     m_Camera(45, 0.1f, 100.0f)
 {
     m_Camera.Move({ 0, 0, 3 });

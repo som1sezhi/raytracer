@@ -12,12 +12,12 @@
 class GPURenderer : public Renderer
 {
 public:
-	GPURenderer() = default;
+    GPURenderer() = default;
 
-	virtual void OnResize(uint32_t width, uint32_t height) override;
-	virtual void Render(Scene& scene, Camera& camera, const RenderSettings& settings) override;
-	virtual Image* GetImage() override { return m_Image.get(); }
+    virtual void OnResize(uint32_t width, uint32_t height) override;
+    virtual void Render(Scene& scene, Camera& camera, const RenderSettings& settings) override;
+    virtual Image* GetImage() override { return m_Image.get(); }
 private:
-	std::unique_ptr<Image> m_Image;
-	cudaGraphicsResource_t m_ImageCudaResource = nullptr;
+    std::unique_ptr<Image> m_Image;
+    cudaGraphicsResource_t m_ImageCudaResource = nullptr;
 };
