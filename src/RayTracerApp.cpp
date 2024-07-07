@@ -46,7 +46,7 @@ void RayTracerApp::Update()
 
     // ================ Camera controls ================
 
-    // Begin enabling camera controls if LMB is held
+    // Begin enabling camera controls if RMB is held
     // AND the mouse is not captured by ImGui.
     // If camera controls were active last frame, only disable them if
     // RMB is released (so that if the mouse leaves the area for 1 frame it 
