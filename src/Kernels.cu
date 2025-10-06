@@ -14,7 +14,9 @@ void renderKernel(RenderKernelParams params)
 
     int idx = x + params.width * y;
     uint32_t seed = idx * (params.curNumSamples + 1);
-    Ray ray = params.renderParams.camera.GetRay(x, y);
+    Ray ray = params.renderParams.camera.CalcRay(
+        x, y, params.renderParams.settings.antialias, seed
+    );
 
     glm::vec3 color = getRayColor(ray, params.renderParams, seed);
 

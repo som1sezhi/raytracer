@@ -31,6 +31,7 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
 
     m_RenderSettings = {
         .bounceLimit = 5,
+        .antialias = true,
         .skyColor1 = { 0.5f, 0.7f, 1.0f },
         .skyColor2 = { 1.0f, 1.0f, 1.0f },
     };
@@ -211,6 +212,7 @@ void RayTracerApp::RenderUI()
         ImGui::SeparatorText("Renderer");
         doRenderReset |= ImGui::Combo("Viewport renderer", &m_CurrRendererIdx, "CPU\0GPU\0\0");
         doRenderReset |= ImGui::DragInt("Bounce limit", &m_RenderSettings.bounceLimit, 0.05f, 0, 100);
+        doRenderReset |= ImGui::Checkbox("Antialias", &m_RenderSettings.antialias);
 
         ImGui::SeparatorText("Sky");
         doRenderReset |= gammaColorEdit3("Sky color 1", glm::value_ptr(m_RenderSettings.skyColor1));

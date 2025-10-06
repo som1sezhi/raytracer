@@ -6,6 +6,7 @@
 #include <cuda_runtime.h>
 
 #include "Ray.h"
+#include "Utils.h"
 
 class Camera
 {
@@ -22,20 +23,30 @@ public:
     const glm::mat4& GetInvViewMatrix() const { return m_InvViewMatrix; }
     const glm::mat4& GetInvProjectionMatrix() const { return m_InvProjectionMatrix; }
     const glm::vec3* GetRayDirs() { return m_CachedRayDirs; }
+    glm::vec3 GetRayDir(uint32_t x, uint32_t y, bool antialias, uint32_t& seed) const;
 
-    __device__ Ray GetRay(uint32_t x, uint32_t y) const
+    __device__ Ray CalcRay(
+        uint32_t x, uint32_t y, bool antialias, uint32_t& seed
+    ) const
     {
-        return { m_Position, CalcRayDir(x, y) };
+        if (antialias)
+        {
+            float fx = static_cast<float>(x) + randomFloat(seed);
+            float fy = static_cast<float>(y) + randomFloat(seed);
+            return { m_Position, CalcRayDir(fx, fy) };
+        }
+        else
+            return { m_Position, CalcRayDir(x, y) };
     }
 
     bool RecalcMatrices();
     bool RecalcRayDirs();
 
 private:
-    __host__ __device__ glm::vec3 CalcRayDir(uint32_t x, uint32_t y) const
+    __host__ __device__ glm::vec3 CalcRayDir(float x, float y) const
     {
         glm::vec2 clipCoord =
-            (glm::vec2(x, y) + 0.5f) / glm::vec2(m_ViewportWidth, m_ViewportHeight);
+            glm::vec2(x, y) / glm::vec2(m_ViewportWidth, m_ViewportHeight);
         clipCoord = clipCoord * 2.0f - 1.0f;
 
         glm::vec4 target = m_InvProjectionMatrix * glm::vec4(clipCoord, 1, 1);
@@ -46,6 +57,13 @@ private:
             )
         );
         return rayDir;
+    }
+
+    __host__ __device__ glm::vec3 CalcRayDir(uint32_t x, uint32_t y) const
+    {
+        return CalcRayDir(
+            static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f
+        );
     }
 
     bool RecalcViewMatrix();
@@ -61,6 +79,11 @@ private:
     glm::mat4 m_ProjectionMatrix{ 1.0f };
     glm::mat4 m_InvViewMatrix{ 1.0f };
     glm::mat4 m_InvProjectionMatrix{ 1.0f };
+
+    glm::vec3 m_RightDir{ 1.0f, 0.0f, 0.0f };
+    glm::vec3 m_UpDir{ 0.0f, 1.0f, 0.0f };
+    // Size of a pixel in the viewport plane 1 unit in front of the camera
+    float m_PixelScale;
 
     glm::vec3* m_CachedRayDirs = nullptr;
     size_t m_CachedRayDirsSize = 0;

@@ -26,4 +26,8 @@ public:
     __host__ __device__ bool Surrounds(float x) const {
         return min < x && x < max;
     }
+
+    __host__ __device__ float Clamp(float x) const {
+        return x < min ? min : x > max ? max : x;
+    }
 };

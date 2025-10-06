@@ -11,11 +11,11 @@ Features:
 - Sphere primitives
 - Diffuse and emissive materials
 - CPU or GPU rendering
+- Antialiasing
 
 Future plans:
 
 - Metallic and specular materials
-- Antialiasing
 - Depth of field
 - Model/mesh importing
 - BVH acceleration structures

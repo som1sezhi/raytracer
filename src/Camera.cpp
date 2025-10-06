@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "glm/gtc/matrix_access.hpp"
 
 /* Adapted from TheCherno's Ray Tracing series under the MIT License.
 
@@ -52,6 +53,30 @@ void Camera::Rotate(const glm::quat& rotation)
     m_ViewNeedsRecalc = true;
 }
 
+glm::vec3 Camera::GetRayDir(
+    uint32_t x, uint32_t y, bool antialias, uint32_t& seed
+) const
+{
+    const glm::vec3& cachedDir = m_CachedRayDirs[x + y * m_ViewportWidth];
+    if (antialias)
+    {
+        // Nudge precomputed ray dir
+
+        // Size of projection of cached ray dir on forward vector
+        float zDist = glm::dot(cachedDir, m_ForwardDir);
+
+        float pxSize = m_PixelScale * zDist;
+
+        return cachedDir + pxSize * (
+            (randomFloat(seed) - 0.5f) * m_RightDir
+            + (randomFloat(seed) - 0.5f) * m_UpDir
+        );
+    }
+    else
+        // Return precomputed ray dir
+        return cachedDir;
+}
+
 bool Camera::RecalcMatrices()
 {
     m_CachedRaysNeedRecalc = m_CachedRaysNeedRecalc || m_ViewNeedsRecalc || m_ProjectionNeedsRecalc;
@@ -70,6 +95,9 @@ bool Camera::RecalcViewMatrix()
     );
     m_InvViewMatrix = glm::inverse(m_ViewMatrix);
 
+    m_RightDir = glm::column(m_InvViewMatrix, 0);
+    m_UpDir = glm::column(m_InvViewMatrix, 1);
+
     m_ViewNeedsRecalc = false;
     return true;
 }
@@ -85,6 +113,10 @@ bool Camera::RecalcProjectionMatrix()
         m_NearClip, m_FarClip
     );
     m_InvProjectionMatrix = glm::inverse(m_ProjectionMatrix);
+
+    // Height of viewport plane 1 unit in front of the camera
+    float viewH = 2.0f * glm::tan(0.5f * glm::radians(m_VerticalFOV));
+    m_PixelScale = viewH / (float)m_ViewportHeight;
 
     m_ProjectionNeedsRecalc = false;
     return true;
