@@ -5,6 +5,7 @@
 #include <cuda_runtime.h>
 
 #include "Material.h"
+#include "Interval.h"
 
 struct Sphere
 {
@@ -13,7 +14,7 @@ struct Sphere
     Material material;
 
     __host__ __device__
-    HitInfo Intersect(const Ray& ray, float minDist, float maxDist) const
+    HitInfo Intersect(const Ray& ray, Interval rayT) const
     {
         glm::vec3 movedOrigin = ray.origin - center;
 
@@ -26,10 +27,10 @@ struct Sphere
             return HitInfo{};
         
         float root = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-        if (root <= minDist || maxDist <= root)
+        if (!rayT.Surrounds(root))
         {
             root = (-b + glm::sqrt(discriminant)) / (2.0f * a);
-            if (root <= minDist || maxDist <= root)
+            if (!rayT.Surrounds(root))
                 return HitInfo{};
         }
 

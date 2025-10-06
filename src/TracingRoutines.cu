@@ -6,6 +6,7 @@
 #include "HitInfo.h"
 #include "Material.h"
 #include "Scene.h"
+#include "Interval.h"
 
 __host__ __device__
 HitInfo hitScene(const Ray& ray, RenderParams& params)
@@ -14,7 +15,7 @@ HitInfo hitScene(const Ray& ray, RenderParams& params)
     for (size_t i = 0; i < params.spheresCount; i++)
     {
         Sphere* sphere = params.spheres + i;
-        HitInfo hit = sphere->Intersect(ray, 1e-8f, closestHit.dist);
+        HitInfo hit = sphere->Intersect(ray, { 1e-8f, closestHit.dist });
 
         if (hit.dist < closestHit.dist)
             closestHit = hit;
