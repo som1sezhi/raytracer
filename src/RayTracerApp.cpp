@@ -3,6 +3,7 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include "core/Timer.h"
+#include "Material.h"
 
 // Wrapper around ColorEdit3 that performs gamma correction.
 // Users set color as sRGB, color is written to memory as linear RGB.
@@ -22,11 +23,11 @@ RayTracerApp::RayTracerApp(const AppSpec &spec)
     m_Camera.Move({ 0, 0, 3 });
     m_Scene.spheres.push_back(Sphere{
         { 0.0f, 0.0f, 0.0f }, 0.5f,
-        Material{{0.6f, 0.15f, 0.15f}}
+        BasicMaterial{ .color = {0.6f, 0.15f, 0.15f} }
     });
     m_Scene.spheres.push_back(Sphere{
         { 0.0f, -100.5f, 0.0f }, 100.0f,
-        Material{glm::vec3(0.5f)}
+        BasicMaterial{ .color = glm::vec3(0.5f) }
     });
 
     m_RenderSettings = {
@@ -253,9 +254,45 @@ void RayTracerApp::RenderUI()
 
             doRenderReset |= ImGui::DragFloat3("Position", glm::value_ptr(sphere.center), 0.05f);
             doRenderReset |= ImGui::DragFloat("Radius", &sphere.radius, 0.025f, 0.0f, FLT_MAX);
-            doRenderReset |= gammaColorEdit3("Color", glm::value_ptr(sphere.material.color));
-            doRenderReset |= gammaColorEdit3("Emission", glm::value_ptr(sphere.material.emissionColor));
-            doRenderReset |= ImGui::DragFloat("Emission strength", &sphere.material.emissionStrength, 0.1f, 0.0f, FLT_MAX);
+
+            int matTypeIdx = static_cast<int>(sphere.material.GetType());
+            doRenderReset |= ImGui::Combo("Material", &matTypeIdx, "Basic\0Mirror\0\0");
+            if (matTypeIdx != static_cast<int>(sphere.material.GetType()))
+            {
+                Material::Type newMatType = static_cast<Material::Type>(matTypeIdx);
+                switch (static_cast<Material::Type>(matTypeIdx))
+                {
+                case Material::Type::Basic:
+                    sphere.material.Set(BasicMaterial{});
+                    break;
+                case Material::Type::Mirror:
+                    sphere.material.Set(MirrorMaterial{});
+                    break;
+                }
+            }
+
+            struct
+            {
+                bool operator()(BasicMaterial& mat)
+                {
+                    bool doReset = false;
+                    doReset |= gammaColorEdit3("Color", glm::value_ptr(mat.color));
+                    doReset |= gammaColorEdit3("Emission", glm::value_ptr(mat.emissionColor));
+                    doReset |= ImGui::DragFloat("Emission strength", &mat.emissionStrength, 0.1f, 0.0f, FLT_MAX);
+                    doReset |= ImGui::DragFloat("Metallic", &mat.metallic, 0.01f, 0.0f, 1.0f);
+                    doReset |= ImGui::DragFloat("Fuzz", &mat.fuzz, 0.01f, 0.0f, 2.0f);
+                    return doReset;
+                }
+                bool operator()(MirrorMaterial& mat)
+                {
+                    bool doReset = false;
+                    doReset |= gammaColorEdit3("Color", glm::value_ptr(mat.tint));
+                    return doReset;
+                }
+            } renderUIVisitor;
+
+            doRenderReset |= sphere.material.Visit(renderUIVisitor);
+
             ImGui::Separator();
             ImGui::PopID();
         }
@@ -270,7 +307,7 @@ void RayTracerApp::RenderUI()
         {
             m_Scene.spheres.push_back(Sphere{
                 glm::vec3(0.0f), 0.5f,
-                Material{glm::vec3(0.5f)}
+                Material{}
             });
             doRenderReset = true;
         }

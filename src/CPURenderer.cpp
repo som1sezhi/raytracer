@@ -62,7 +62,6 @@ void CPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& set
             uint32_t i = x + y * width;
             uint32_t seed = i * (m_CurNumSamples + 1);
 
-            // TODO: profile antialiasing
             ray.dir = camera.GetRayDir(x, y, settings.antialias, seed);
 
             glm::vec3 color = getRayColor(ray, params, seed);
