@@ -4,30 +4,6 @@
 #include <stdio.h>
 #include "Utils.h"
 
-__device__
-bool myisprint(unsigned char c) {
-    return c >= 32 && c < 127;
-}
-
-__device__
-void hexdump(void* ptr, int buflen) {
-    unsigned char* buf = (unsigned char*)ptr;
-    int i, j;
-    for (i = 0; i < buflen; i += 16) {
-        printf("%06x: ", i);
-        for (j = 0; j < 16; j++)
-            if (i + j < buflen)
-                printf("%02x ", buf[i + j]);
-            else
-                printf("   ");
-        printf(" ");
-        for (j = 0; j < 16; j++)
-            if (i + j < buflen)
-                printf("%c", myisprint(buf[i + j]) ? buf[i + j] : '.');
-        printf("\n");
-    }
-}
-
 __global__
 void renderKernel(RenderKernelParams params)
 {
@@ -35,29 +11,6 @@ void renderKernel(RenderKernelParams params)
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     if ((x >= params.width) || (y >= params.height))
         return;
-
-    // TODO: remove
-    //if (x == 0 && y == 0 && params.curNumSamples % 100 == 0)
-    //{
-    //    printf("=====================\nDEVICE\n");
-    //    for (int i = 0; i < params.renderParams.spheresCount; i++)
-    //    {
-    //        auto sphere = params.renderParams.spheres[i];
-    //        printf("center %f %f %f\n", sphere.center[0], sphere.center[1], sphere.center[2]);
-    //        printf("radius %f\n", sphere.radius);
-    //        printf("type %d\n", (int)sphere.material.GetType());
-    //        printf("sizes %u %u %u %u\n", sizeof(sphere), sizeof(Sphere), sizeof(sphere.material), sizeof(Material));
-    //        printf("offsets %u\n", offsetof(Sphere, material));
-    //        //BasicMaterial& m = sphere.material.Get<BasicMaterial>();
-    //        //printf("color %f %f %f\n", m.color[0], m.color[1], m.color[2]);
-    //        hexdump(&sphere, sizeof(sphere));
-    //        for (int i = 0; i < sizeof(sphere) / sizeof(float); i++)
-    //        {
-    //            printf("%f, ", *((float*)&sphere + i));
-    //        }
-    //        printf("\n\n");
-    //    }
-    //}
 
     int idx = x + params.width * y;
     uint32_t seed = idx * (params.curNumSamples + 1);
