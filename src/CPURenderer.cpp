@@ -1,6 +1,9 @@
 #include "CPURenderer.h"
 
 #include <stdio.h>
+#include <ranges>
+#include <algorithm>
+#include <execution>
 #include "TracingRoutines.h"
 #include "Utils.h"
 
@@ -45,8 +48,6 @@ void CPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& set
 
     uint32_t width = m_Image->GetWidth();
     uint32_t height = m_Image->GetHeight();
-    Ray ray;
-    ray.origin = camera.GetPosition();
 
     RenderParams params = {
         .spheres = scene.spheres.data(),
@@ -55,29 +56,37 @@ void CPURenderer::Render(Scene& scene, Camera& camera, const RenderSettings& set
         .settings = settings
     };
 
-    for (uint32_t y = 0; y < height; y++)
-    {
-        for (uint32_t x = 0; x < width; x++)
+    auto rowRange = std::views::iota(0u, height);
+    std::for_each(
+        std::execution::par,
+        rowRange.begin(), rowRange.end(),
+        [this, width, height, &camera, &params](uint32_t y)
         {
-            uint32_t i = x + y * width;
-            uint32_t seed = i * (m_CurNumSamples + 1);
+            Ray ray;
+            ray.origin = camera.GetPosition();
+            for (uint32_t x = 0; x < width; x++)
+            {
+                uint32_t i = x + y * width;
+                uint32_t seed = i * (m_CurNumSamples + 1);
 
-            ray.dir = camera.GetRayDir(x, y, settings.antialias, seed);
+                ray.dir = camera.GetRayDir(x, y, params.settings.antialias, seed);
 
-            glm::vec3 color = getRayColor(ray, params, seed);
+                glm::vec3 color = getRayColor(ray, params, seed);
 
-            glm::vec3 old = *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i);
+                glm::vec3 old = *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i);
 
-            //  Accumulate color
-            old = gammaToLinear(old);
-            color = ((float) m_CurNumSamples * old + color)
-                / ((float) m_CurNumSamples + 1);
-            color = linearToGamma(color);
+                //  Accumulate color
+                old = gammaToLinear(old);
+                color = ((float)m_CurNumSamples * old + color)
+                    / ((float)m_CurNumSamples + 1);
+                color = linearToGamma(color);
 
-            *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i) = color;
-            m_ImageData[4 * i + 3] = 1.0f;
+                *reinterpret_cast<glm::vec3*>(m_ImageData + 4 * i) = color;
+                m_ImageData[4 * i + 3] = 1.0f;
+            }
         }
-    }
+    );
+
     m_Image->SetData(m_ImageData);
 
     m_CurNumSamples++;
