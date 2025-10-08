@@ -256,7 +256,7 @@ void RayTracerApp::RenderUI()
             doRenderReset |= ImGui::DragFloat("Radius", &sphere.radius, 0.025f, 0.0f, FLT_MAX);
 
             int matTypeIdx = static_cast<int>(sphere.material.GetType());
-            doRenderReset |= ImGui::Combo("Material", &matTypeIdx, "Basic\0Mirror\0\0");
+            doRenderReset |= ImGui::Combo("Material", &matTypeIdx, "Basic\0Dielectric\0\0");
             if (matTypeIdx != static_cast<int>(sphere.material.GetType()))
             {
                 Material::Type newMatType = static_cast<Material::Type>(matTypeIdx);
@@ -265,8 +265,8 @@ void RayTracerApp::RenderUI()
                 case Material::Type::Basic:
                     sphere.material.Set(BasicMaterial{});
                     break;
-                case Material::Type::Mirror:
-                    sphere.material.Set(MirrorMaterial{});
+                case Material::Type::Dielectric:
+                    sphere.material.Set(DielectricMaterial{});
                     break;
                 }
             }
@@ -280,13 +280,13 @@ void RayTracerApp::RenderUI()
                     doReset |= gammaColorEdit3("Emission", glm::value_ptr(mat.emissionColor));
                     doReset |= ImGui::DragFloat("Emission strength", &mat.emissionStrength, 0.1f, 0.0f, FLT_MAX);
                     doReset |= ImGui::DragFloat("Metallic", &mat.metallic, 0.01f, 0.0f, 1.0f);
-                    doReset |= ImGui::DragFloat("Fuzz", &mat.fuzz, 0.01f, 0.0f, 2.0f);
+                    doReset |= ImGui::DragFloat("Fuzz", &mat.fuzz, 0.01f, 0.0f, 1.0f);
                     return doReset;
                 }
-                bool operator()(MirrorMaterial& mat)
+                bool operator()(DielectricMaterial& mat)
                 {
                     bool doReset = false;
-                    doReset |= gammaColorEdit3("Color", glm::value_ptr(mat.tint));
+                    doReset |= ImGui::DragFloat("IOR", &mat.ior, 0.01f, 1.0f, FLT_MAX);
                     return doReset;
                 }
             } renderUIVisitor;

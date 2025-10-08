@@ -37,7 +37,8 @@ struct Sphere
         HitInfo hit;
         hit.dist = root;
         hit.position = ray.At(hit.dist);
-        hit.normal = (hit.position - center) / radius;
+        glm::vec3 normal = (hit.position - center) / radius;
+        hit.SetFaceNormal(ray, normal);
         hit.material = &material;
         
         return hit;

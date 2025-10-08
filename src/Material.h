@@ -53,9 +53,9 @@ struct BasicMaterial
     }
 };
 
-struct MirrorMaterial
+struct DielectricMaterial
 {
-    glm::vec3 tint{ 1.0f };
+    float ior = 1.333f;
 
     __host__ __device__
         bool ScatterRay(
@@ -67,11 +67,31 @@ struct MirrorMaterial
             uint32_t& seed
         ) const
     {
-        glm::vec3 reflected = glm::reflect(rayIn.dir, hit.normal);
-        rayOut = { hit.position, reflected };
-        absorption = tint;
+        float eta = hit.frontFace ? 1.0f / ior : ior;
+
+        float cosTheta = glm::min(glm::dot(-rayIn.dir, hit.normal), 1.0f);
+        float sinTheta = glm::sqrt(1.0f - cosTheta * cosTheta);
+        bool cannotRefract = eta * sinTheta > 1.0;
+
+        glm::vec3 dir;
+        if (cannotRefract || Fresnel(cosTheta, eta) > randomFloat(seed))
+            dir = glm::reflect(rayIn.dir, hit.normal);
+        else
+            dir = glm::refract(rayIn.dir, hit.normal, eta);
+
+        rayOut = { hit.position, dir };
+        absorption = glm::vec3{ 1.0f };
         light = glm::vec3{ 0.0f };
         return true;
+    }
+
+private:
+    __host__ __device__
+    static float Fresnel(float cosine, float eta)
+    {
+        float r0 = (1.0f - eta) / (1.0f + eta);
+        r0 = r0 * r0;
+        return r0 + (1.0f - r0) * glm::pow((1.0f - cosine), 5.0f);
     }
 };
 
@@ -85,7 +105,7 @@ public:
     {
         // Should match the order of material types in the union
         Basic,
-        Mirror
+        Dielectric
     };
 
 #define MAT_TYPENAME(T) T##Material
@@ -97,7 +117,7 @@ public:
 
     Material() : m_Type(Type::Basic), m_AsBasic(BasicMaterial{}) {}
     MAT_METHODS(Basic)
-    MAT_METHODS(Mirror)
+    MAT_METHODS(Dielectric)
 
     __host__ __device__ Type GetType() const { return m_Type; }
 
@@ -108,7 +128,7 @@ public:
         switch (m_Type)
         {
             MAT_VISIT_CASE(Basic);
-            MAT_VISIT_CASE(Mirror);
+            MAT_VISIT_CASE(Dielectric);
         }
         #undef MAT_VISIT_CASE
     }
@@ -145,7 +165,7 @@ private:
     union
     {
         MAT_UNION_DEF(Basic);
-        MAT_UNION_DEF(Mirror);
+        MAT_UNION_DEF(Dielectric);
     };
 
 #undef MAT_METHODS
